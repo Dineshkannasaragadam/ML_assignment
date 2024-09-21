@@ -143,7 +143,7 @@ for i in df.columns:
     df[i]=le.fit_transform(df[i])
 if st.button('submit'):
     x=predict(df)
-    st.write(f"The predicted price is {x}")
+    st.write(f"The predicted price is {x[0]}")
 
 
 
