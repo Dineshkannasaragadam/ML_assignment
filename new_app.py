@@ -8,11 +8,14 @@ from sklearn.metrics import mean_squared_error, r2_score
 import xgboost as xgb
 import pickle
 import regex
+import gzip
 from sklearn.model_selection import GridSearchCV
 st.set_page_config(page_title="Vehicle Price Predictor", layout="wide")
 st.title('Australian Vehicle Price Predictor')
-with open('Random.pkl', 'rb') as model_file:
-    model,feature_names = pickle.load(model_file)
+with open('Raga.pkl', 'rb') as model_file:
+    modelll,feature_names = pickle.load(model_file)
+with gzip.open('compressed_Pickle.pkl', 'rb') as model_file:
+    model= pickle.load(model_file)
 fea={
     'Brand':['Ssangyong','MG', 'BMW' ,'Mercedes-Benz' ,'Renault' ,'Land' ,'Nissan' ,'Toyota','Honda' ,'Volkswagen' ,'Ford' ,'Mitsubishi' ,'Subaru' ,'Hyundai' ,'Jeep',
  'Volvo' ,'Mazda','Abarth','Holden','Audi','Kia','Mini','Suzuki','Porsche',
