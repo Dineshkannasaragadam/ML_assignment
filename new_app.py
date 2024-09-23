@@ -11,7 +11,7 @@ import regex
 from sklearn.model_selection import GridSearchCV
 st.set_page_config(page_title="Vehicle Price Predictor", layout="wide")
 st.title('Australian Vehicle Price Predictor')
-with open('regression_mo.pkl', 'rb') as model_file:
+with open('random.pkl', 'rb') as model_file:
     model,feature_names = pickle.load(model_file)
 fea={
     'Brand':['Ssangyong','MG', 'BMW' ,'Mercedes-Benz' ,'Renault' ,'Land' ,'Nissan' ,'Toyota','Honda' ,'Volkswagen' ,'Ford' ,'Mitsubishi' ,'Subaru' ,'Hyundai' ,'Jeep',
@@ -109,8 +109,8 @@ selected_features={}
 for feature,options in fea.items():
     selected_features[feature]=st.selectbox(f'Select {feature}',options)
 year=st.number_input('year',value=0)
-Engine=st.text_input('Engine',placeholder='4 cyl, 2.2 L')
-FuelConsumption=st.text_input('FuelConsumption',placeholder='8.7 L / 100 km')
+Engine=st.text_input('Engine (x cyl,y L)',placeholder='4 cyl, 2.2 L',value=' 0 cyl, 0.0 L')
+FuelConsumption=st.text_input('FuelConsumption',placeholder='8.7 L',value='0')
 Kilometres=st.number_input('Kilometres',value=0)
 CylindersinEngine=st.text_input('CylindersinEngine',value=0)
 Doors=st.number_input('Doors',value=0)
@@ -132,16 +132,31 @@ data={
     'Doors':Doors,
     'Seats':Seats
 }
+st.write(selected_features)
+def load_and_transform(feature, new_value):
+    with open(f'{feature}_encoder.pkl', 'rb') as f:
+        encoder = pickle.load(f)
+    
+    # Transform the new user input
+    transformed_value = encoder.transform(new_value)
+    
+    return transformed_value
+
+encoded_user_data = {}
+for feature, value in selected_features.items():
+    data[feature] = load_and_transform(feature,[value])
+st.write(data)    
+
 df=pd.DataFrame([data],columns=['Brand', 'Year','Engine', 'Model', 'UsedOrNew', 'Transmission', 'DriveType',
        'FuelType', 'FuelConsumption', 'Kilometres', 'CylindersinEngine',
        'BodyType', 'Doors', 'Seats'])
-df['engine_displacement']=df['Engine'].str.extract(r'(\d+\.\d+) L').astype(float)
-df.drop('Engine',axis=1,inplace=True)
-from sklearn.preprocessing import LabelEncoder
-le=LabelEncoder()
-for i in df.columns:
-    df[i]=le.fit_transform(df[i])
-df=df[feature_names]        
+
+df['cylinders']=df['CylindersinEngine']
+df['engine_displacement'] = df['Engine'].str.extract(r'(\d+\.\d+|\d +L)').astype(float)
+df['FuelConsumption'] = df['FuelConsumption'].str.extract(r'([0-9.]+)').astype(float)
+st.write(df)
+df=df[feature_names] 
+st.write(df.dtypes)
 if st.button('submit'):
     x=predict(df)
     st.write(f"The predicted price is {x[0]}")
